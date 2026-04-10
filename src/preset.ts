@@ -17,9 +17,9 @@ export type TitlePresetCommonOptions = {
   suffix?: string;
   /**
    * Composites the tab favicon with a small status badge (bottom-right): `error` / `warning` /
-   * `info` use a colored dot; `success` draws a green check with a white outer stroke (no filled
-   * plate behind it). `true` is the same as `"warning"`. Requires an existing `link[rel~=icon]` in
-   * the document.
+   * `info` use a colored dot; `success` draws a check with dark + white + light-green strokes so
+   * it stays readable on green-tinted icons. `true` is the same as `"warning"`. Requires an
+   * existing `link[rel~=icon]` in the document.
    */
   status?: boolean | TitlePresetTabStatus;
   /** Enable animated title rendering when applied via `titlefx.preset(...)`. */

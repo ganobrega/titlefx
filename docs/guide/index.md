@@ -184,7 +184,7 @@ pushGithubStyleTitle({
   status: "warning",
 });
 
-// Use status: "success" for a green check with white outline on the favicon (e.g. CI passing).
+// Use status: "success" for a high-contrast check (dark + white + light green) on the favicon.
 ```
 
 - Prefer **typed helpers** (or shared option objects) over scattering raw `preset(...)` calls across components.

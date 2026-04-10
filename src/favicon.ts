@@ -16,6 +16,10 @@ const TAB_STATUS_DOT: Record<TitlePresetTabStatus, string> = {
   success: "#22c55e",
 };
 
+/** Success check only: dark outer ring + white + lighter green so it reads on green-tinted icons. */
+const SUCCESS_CHECK_OUTER = "#0c0f0d";
+const SUCCESS_CHECK_INNER = "#86efac";
+
 function xmlEscapeAttr(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -32,7 +36,7 @@ function resolveIconHref(href: string): string {
   }
 }
 
-/** Bottom-right badge: solid dot, or outlined check for `success` (white stroke under green). */
+/** Bottom-right badge: solid dot, or layered check for `success` (dark → white → light green). */
 function tabStatusOverlay(tabStatus: TitlePresetTabStatus): string {
   const cx = 25;
   const cy = 25;
@@ -40,14 +44,17 @@ function tabStatusOverlay(tabStatus: TitlePresetTabStatus): string {
   const ring = ` stroke="#fff" stroke-width="1.2"`;
 
   if (tabStatus === "success") {
-    const green = TAB_STATUS_DOT.success;
     const d = "M4 8.8 7.4 12.4 14.2 3.9";
-    // Nested SVG in the corner; viewBox padding so thick strokes are not clipped.
+    // Nested SVG fills parent bottom-right (4+28=32). Translate anchors stroked bbox to viewBox corner.
+    const cornerTx = 7.35;
+    const cornerTy = 9.1;
     return (
-      `<svg x="13" y="13" width="19" height="19" viewBox="-1.5 -1.5 20 20" overflow="visible">` +
-      `<path d="${d}" fill="none" stroke="#ffffff" stroke-width="3.9" stroke-linecap="round" stroke-linejoin="round"/>` +
-      `<path d="${d}" fill="none" stroke="${green}" stroke-width="2.45" stroke-linecap="round" stroke-linejoin="round"/>` +
-      `</svg>`
+      `<svg x="4" y="4" width="28" height="28" viewBox="-5.25 -5.25 31.5 31.5" overflow="visible">` +
+      `<g transform="translate(${cornerTx} ${cornerTy})">` +
+      `<path d="${d}" fill="none" stroke="${SUCCESS_CHECK_OUTER}" stroke-width="7.35" stroke-linecap="round" stroke-linejoin="round"/>` +
+      `<path d="${d}" fill="none" stroke="#ffffff" stroke-width="5.45" stroke-linecap="round" stroke-linejoin="round"/>` +
+      `<path d="${d}" fill="none" stroke="${SUCCESS_CHECK_INNER}" stroke-width="2.35" stroke-linecap="round" stroke-linejoin="round"/>` +
+      `</g></svg>`
     );
   }
 

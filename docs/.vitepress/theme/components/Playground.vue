@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
 import titlefx from "titlefx";
 import { clampCount } from "../../../../src/clamp";
 import type { TitlePresetName } from "../../../../src/preset";
+import { mockFaviconUrlForExample } from "./playground-mock-favicons";
 import { examples } from "./playground-examples";
 
 const activeId = ref(examples[0]?.id ?? "");
@@ -56,6 +57,10 @@ const codeSnippet = computed(() => {
 });
 
 const browserTabTitle = computed(() => appliedTitle.value || "New tab");
+
+const mockTabFaviconUrl = computed(() =>
+  mockFaviconUrlForExample(activeExample.value.id),
+);
 
 function syncAppliedTitle() {
   if (typeof document === "undefined") return;
@@ -181,7 +186,24 @@ onUnmounted(() => {
             </div>
             <div class="browser-tabs" role="tablist" aria-label="Tab preview">
               <div class="browser-tab active" role="tab" aria-selected="true">
-                <span class="tab-favicon" :class="tabStatusPreviewClass" />
+                <span
+                  class="tab-favicon"
+                  :class="[
+                    tabStatusPreviewClass,
+                    { 'tab-favicon--brand': mockTabFaviconUrl },
+                  ]"
+                >
+                  <img
+                    v-if="mockTabFaviconUrl"
+                    class="tab-favicon__img"
+                    :src="mockTabFaviconUrl"
+                    alt=""
+                    width="18"
+                    height="18"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </span>
                 <span class="tab-title">{{ browserTabTitle }}</span>
                 <span class="tab-close">×</span>
               </div>
@@ -499,11 +521,27 @@ onUnmounted(() => {
 
 .tab-favicon {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 1.125rem;
   height: 1.125rem;
   border-radius: 4px;
   background: linear-gradient(135deg, #22c55e, #38bdf8);
   flex: 0 0 auto;
+  overflow: hidden;
+}
+
+.tab-favicon--brand {
+  background: #f1f5f9;
+}
+
+.tab-favicon__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  border-radius: 2px;
 }
 
 .tab-favicon.has-status-dot::after {
@@ -530,13 +568,13 @@ onUnmounted(() => {
   background: #3b82f6;
 }
 
-/** Outlined check: white stroke under green (matches `tabStatusOverlay` for success). */
+/** Layered check: dark + white + light green (matches `tabStatusOverlay` for success). */
 .tab-favicon.has-status-dot.has-status-check::after {
-  width: 0.72rem;
-  height: 0.72rem;
+  width: 0.92rem;
+  height: 0.92rem;
   border-radius: 0;
   border: none;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-1.5 -1.5 20 20'%3E%3Cpath d='M4 8.8 7.4 12.4 14.2 3.9' fill='none' stroke='%23fff' stroke-width='3.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M4 8.8 7.4 12.4 14.2 3.9' fill='none' stroke='%2322c55e' stroke-width='2.45' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-5.25 -5.25 31.5 31.5'%3E%3Cg transform='translate(7.35 9.1)'%3E%3Cpath d='M4 8.8 7.4 12.4 14.2 3.9' fill='none' stroke='%230c0f0d' stroke-width='7.35' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M4 8.8 7.4 12.4 14.2 3.9' fill='none' stroke='%23fff' stroke-width='5.45' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M4 8.8 7.4 12.4 14.2 3.9' fill='none' stroke='%2386efac' stroke-width='2.35' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/g%3E%3C/svg%3E")
     center / contain no-repeat;
 }
 

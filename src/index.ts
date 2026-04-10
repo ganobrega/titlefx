@@ -118,7 +118,11 @@ const titlefx: TitlefxApi = {
       const originalTitle = current?.originalTitle ?? document.title;
       const originalFaviconHref =
         current?.originalFaviconHref ?? captureBaselineFaviconHref();
+      const tabStatus = normalizePresetTabStatus(options.status);
+
       stopAnimation(current?.animation ?? null);
+
+      applyTabIconStatus(originalFaviconHref, tabStatus);
 
       const nextState: TitlefxState = {
         originalTitle,
@@ -128,11 +132,6 @@ const titlefx: TitlefxApi = {
         animation: createAnimationState(),
         originalFaviconHref,
       };
-
-      applyTabIconStatus(
-        originalFaviconHref,
-        normalizePresetTabStatus(options.status),
-      );
 
       if (
         options.animate &&
