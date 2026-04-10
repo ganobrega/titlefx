@@ -1,0 +1,47 @@
+/* Tipografia e espaçamento da documentação */
+.vp-doc .custom-block {
+  border-radius: 8px;
+}
+
+.vp-doc h2 {
+  margin-top: 2rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+.vp-doc h2:first-of-type {
+  margin-top: 0;
+  border-top: none;
+  padding-top: 0;
+}
+
+.vp-doc table {
+  display: table;
+  width: 100%;
+  font-size: 0.92rem;
+}
+
+.vp-doc th {
+  white-space: nowrap;
+}
+
+.vp-doc a {
+  text-decoration-skip-ink: auto;
+}
+
+/* Home: hero mais legível */
+.VPHero .tagline {
+  max-width: 40rem;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.55;
+}
+
+.VPHero .heading .name {
+  letter-spacing: -0.03em;
+}
+
+/* Features da home */
+.VPFeatures .item .title {
+  font-weight: 650;
+}
