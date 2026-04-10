@@ -1,0 +1,126 @@
+# titlefx — context for AI assistants
+
+titlefx is a small TypeScript library (npm package `titlefx`) that formats strings for browser tab titles via named presets and optionally applies them to `document.title`, animates the title, and overlays a status dot on the favicon. It is browser-oriented: without `window`/`document` it only runs pure string formatting and does not touch the DOM.
+
+Repository: https://github.com/ganobrega/titlefx
+
+This file is served at `/llms.txt` on the VitePress docs site (source: `docs/public/llms.txt`). Develop docs with `bun run docs:dev`.
+
+Package version in source: see `package.json` (e.g. 0.1.0). Build output: `dist/` (ESM + `.d.ts`). Entry: `src/index.ts` → `dist/index.js`.
+
+---
+
+## Default import and global
+
+```ts
+import titlefx from "titlefx";
+```
+
+In the browser, `window.titlefx` is set to the same API object for framework-agnostic access. `dispose()` clears internal state but leaves `window.titlefx` pointing at the API.
+
+---
+
+## Public API surface (`titlefx` object)
+
+- `titlefx.preset(name, options?)` — builds the title string; with DOM, updates `document.title`, animation, and favicon badge per options. **Returns** the formatted string always.
+- `titlefx.dispose()` — stops animation, restores original `document.title` and baseline favicon (if captured), clears internal state (`__titlefx_state__` on `window`).
+- `titlefx.debug(overrideTitle?)` — returns a `TitlefxDebugReport` for desktop tab length heuristics. Uses `document.title` when no argument and DOM exists; else `lastTitle` from state or `""`.
+
+Named exports include preset helpers from `./animate`, debug constants/functions (`TITLE_TAB_*`, `buildTitleDebugReport`, `estimateTitleVisualUnits`), and types (`TitlePresetName`, `TitlePresetOptionsMap`, `TitlePresetTabStatus`, `TitlefxDebugReport`, etc.).
+
+---
+
+## `preset(name)` without options (template mode)
+
+Returns the placeholder template string only (no DOM side effects):
+
+| name | template |
+|-----------------|----------|
+| default         | `{pre}{title}{separator}{brand}{suf}` |
+| media           | `{pre}{content} - {author} \| {brand}{suf}` |
+| notifications   | `{pre}({count}) {brand}{separator}{context}{suf}` |
+| progress        | `{pre}[{count}%] {brand}{separator}{context}{suf}` |
+| custom          | `{template}` |
+
+---
+
+## Presets with options (formatting rules)
+
+**default** — `context` or `title` + `brand`. Separator between title and brand defaults to ` - ` (not the bullet used elsewhere). `prefix` / `suffix` add spaced tokens.
+
+**media** — `content`, `author`, `brand` joined as `{content} - {author} | {brand}` with spacing.
+
+**notifications** — `count` (clamped via `clampCount`) → `(n) ` prefix when present; `brand` and `context` joined with separator (default ` • `). `prefix` / `suffix` supported.
+
+**progress** — `count` as `[n%] `; then `brand` and `context` with same separator behavior as notifications.
+
+**custom** — `template` string with `{key}` placeholders; keys map to option fields. Special keys in template: `pre`, `suf`, `separator` use the same formatters as other presets. Extra keys pass through `formatCustomValue`. `count` may be string or number.
+
+---
+
+## Common options (all presets)
+
+`TitlePresetCommonOptions` (merged into each preset’s options):
+
+- `prefix`, `suffix` — trimmed; formatted as trailing/leading single space when non-empty.
+- `status` — `boolean | "error" | "info" | "warning"`. `true` means `"warning"`. When set, favicon gets a bottom-right dot: error `#dc2626`, warning `#facc15`, info `#3b82f6`. Requires at least one `link[rel~=icon]` or `shortcut icon`. Implementation **fetches** the icon and inlines it as a data URL inside a wrapper SVG (browsers block external `<image href>` inside favicon data URLs). Async on first load; cached by resolved URL; in-flight work cancelled when status cleared or `dispose()` runs.
+- `animate` + `animation` — `"loop" | "bounce" | "blink"` + optional `speed`: `"slow" | "normal" | "fast"`. Animation runs only when `animate` is truthy and `animation` is one of those three. Uses `requestAnimationFrame` when tab visible; when hidden, uses timers and catch-up so motion does not stall obviously.
+- **No pause/resume API.** To stop animation: call `preset` again without animation options (or `animate: false`); tab shows the **full** static preset string, not the current animation frame. For full reset use `dispose()`.
+
+---
+
+## Low-level animation exports
+
+Exported from the package for advanced use: `createAnimationState`, `createLoopFrames`, `createBackAndForthFrames`, `createBlinkFrames`, `startTitleAnimation`, `stopAnimation`, types `TitlefxAnimationState`, `TitlefxAnimationSpeed`, `TitlefxAnimationType`. The main `titlefx.preset` path owns one `TitlefxAnimationState` per active session in internal state.
+
+---
+
+## Debug / tab title length
+
+`titlefx.debug()` and `buildTitleDebugReport(title)` use heuristics:
+
+- `TITLE_TAB_COMFORT_CHARS` = 55  
+- `TITLE_TAB_MAX_CHARS` = 60  
+- `TITLE_TAB_MAX_VISUAL_UNITS` = 70 (approximate glyph width; narrow/wide ASCII, emoji, CJK-ish weighting)
+
+`canContinue` is true when length ≤ max chars **and** visual units ≤ max visual. `notes` explains each rule.
+
+---
+
+## Internal state (not public API)
+
+`window.__titlefx_state__` holds `originalTitle`, `lastTitle`, `lastPreset`, `lastOptions`, `animation`, `originalFaviconHref`. Do not rely on this in application code; use `titlefx` methods.
+
+---
+
+## SSR and testing
+
+If `window`/`document` are unavailable, `preset` with options still **returns** the built string but skips DOM, animation, and favicon. `dispose()` is a no-op without DOM; `debug()` uses the optional title argument, else `lastTitle` from state if any, else `""`.
+
+---
+
+## Suggested application patterns (for codegen)
+
+- Wrap `titlefx.preset` in small modules (e.g. `pushNotificationTitle`, `pushGithubStyleTitle`) with typed inputs instead of scattering raw presets.
+- Call `dispose()` on SPA route leave when that view owned the tab title.
+- Use `titlefx.debug("…")` while tuning long titles.
+
+---
+
+## Source layout
+
+- `src/index.ts` — main API, state, wiring  
+- `src/preset.ts` — preset names, types, pure `preset()` formatter  
+- `src/animate.ts` — frames + scheduler  
+- `src/favicon.ts` — status badge SVG + fetch/cache  
+- `src/debug.ts` — tab length report  
+- `src/clamp.ts` — count clamping for notifications/progress  
+
+---
+
+## When answering user questions
+
+- Prefer `titlefx.preset` + typed helpers over mutating `document.title` directly if the project already uses titlefx.
+- Do not invent a `pause()` method; it is intentionally unsupported.
+- Favicon `status` needs a real `<link rel="icon" …>`; cross-origin icons may fail fetch without CORS.
+- Custom preset placeholders use `{name}` matching option keys; `template` is required for meaningful custom output.
