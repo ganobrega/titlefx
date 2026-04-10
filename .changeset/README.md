@@ -22,7 +22,7 @@ Two workflows:
 
 1. **`changesets-version.yml`** (push to `main`): runs `changesets/action` **without** publish — it only opens or updates the **Version packages** PR (`package.json` + `CHANGELOG.md`).
 2. **Merge that PR** into `main`.
-3. **`auto-tag-version.yml`** (push to `main`): reads **`version`** from `package.json`. If the tag **`v<version>`** (e.g. `0.2.0` → `v0.2.0`) **does not** exist on `origin`, it **creates and pushes** that tag. If the tag already exists, it does nothing (idempotent on every merge to `main`).
+3. **`auto-tag-version.yml`** (push to `main` **that changes `package.json`**): reads **`version`** from `package.json`. If the tag **`v<version>`** (e.g. `0.2.0` → `v0.2.0`) **does not** exist on `origin`, it **creates and pushes** that tag. If the tag already exists, it does nothing. Ordinary pushes to `main` (docs, code without touching `package.json`) do **not** run this workflow.
 4. **`publish-on-tag.yml`** runs on **`push` of tags `v*`** → `npm run release` (build + `changeset publish`) with **npm trusted publishing (OIDC)**.
 
 To tag **manually** instead (or to fix a missed release), you can still run `git tag vX.Y.Z && git push origin vX.Y.Z` as long as the tag does not already exist.
