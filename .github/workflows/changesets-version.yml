@@ -1,4 +1,7 @@
-name: Release
+# Opens / updates the "Version packages" PR when there are .changeset/*.md files on main.
+# Does NOT publish to npm — see publish-on-tag.yml after you merge that PR and push a tag.
+
+name: Changesets version
 
 on:
   push:
@@ -6,19 +9,17 @@ on:
       - main
   workflow_dispatch:
 
-# Use Node 24 for JS-based actions (checkout/setup-node deprecation of Node 20).
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  release:
-    name: Release
+  version:
+    name: Open version PR
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      id-token: write
       pull-requests: write
 
     steps:
@@ -27,27 +28,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Node first so npm/npx are available; trusted publishing (OIDC) uses npm during `changeset publish`.
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org
-
-      # Bundled npm can be < 11.6.2; OIDC trusted publishing then fails with misleading E404 (npm/cli#9088).
-      - name: Upgrade npm for OIDC trusted publishing
-        run: npm install -g npm@11.6.2 && npm -v
 
       - uses: oven-sh/setup-bun@v2
 
       - run: bun install --frozen-lockfile
 
-      - name: Create Release Pull Request or Publish
-        id: changesets
+      - name: Create or update Version packages PR
         uses: changesets/action@v1
         with:
-          # Use npm scripts so publish runs Node's npm (OIDC), not Bun.
           version: npm run version-packages
-          publish: npm run release
           commit: "chore: version packages"
           title: "chore: version packages"
         env:
