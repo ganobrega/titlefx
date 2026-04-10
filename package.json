@@ -1,6 +1,6 @@
 {
   "name": "titlefx",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Lightweight library to format and apply document.title with presets and tab animations.",
   "type": "module",
   "repository": {
