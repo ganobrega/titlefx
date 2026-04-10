@@ -1,5 +1,11 @@
 # titlefx
 
+## 0.2.2
+
+### Patch Changes
+
+- 5096d02: Improved CI/CD workflows
+
 ## 0.2.1
 
 ### Patch Changes
