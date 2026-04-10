@@ -29,6 +29,7 @@ export const examples: Example[] = [
       count: 7,
       brand: "WhatsApp",
       context: "Lucas",
+      status: "warning",
       prefix: "💬",
     },
   },
@@ -70,15 +71,6 @@ export const examples: Example[] = [
     },
   },
   {
-    id: "site-default",
-    label: "Website (default)",
-    preset: "default",
-    options: {
-      context: "Homepage",
-      brand: "My site",
-    },
-  },
-  {
     id: "installer-progress",
     label: "uTorrent",
     preset: "progress",
@@ -86,6 +78,29 @@ export const examples: Example[] = [
       count: 42,
       brand: "uTorrent",
       context: "Downloading",
+    },
+  },
+  {
+    id: "github",
+    label: "Github",
+    preset: "custom",
+    options: {
+      template: "{pre}{context}{separator}{user}/{repo}@{branch}{suf}",
+      user: "ganobrega",
+      repo: "titlefx",
+      branch: "17c4e2f",
+      context: "Update version in package.json to 0.1.0",
+      status: "warning",
+      separator: " · ",
+    },
+  },
+  {
+    id: "site-default",
+    label: "Default",
+    preset: "default",
+    options: {
+      context: "Homepage",
+      brand: "My site",
     },
   },
 ];

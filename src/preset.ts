@@ -7,11 +7,20 @@ export type TitlePresetName =
   | "progress"
   | "custom";
 
+/** Tab favicon badge variant. `true` in options is treated as `"warning"`. */
+export type TitlePresetTabStatus = "error" | "info" | "warning";
+
 export type TitlePresetCommonOptions = {
   /** Trim + append a single trailing space (e.g. `"🔥 "`). */
   prefix?: string;
   /** Trim + prepend a single leading space (e.g. `" ❤️😍"`). */
   suffix?: string;
+  /**
+   * Composites the tab favicon with a small status dot (bottom-right): `error` (red),
+   * `warning` (yellow), `info` (blue). `true` is the same as `"warning"`.
+   * Requires an existing `link[rel~=icon]` in the document.
+   */
+  status?: boolean | TitlePresetTabStatus;
   /** Enable animated title rendering when applied via `titlefx.preset(...)`. */
   animate?: boolean;
   /** Supported animation types. */

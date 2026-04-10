@@ -21,12 +21,22 @@ const showCountControls = computed(() => {
   return preset === "notifications" || preset === "progress";
 });
 
+/** Classes for the mock tab favicon dot (mirrors real favicon badge colors). */
+const tabStatusPreviewClass = computed(() => {
+  const s = draft.status;
+  if (s === true || s === "warning") return ["has-status-dot", "has-status-dot--warning"];
+  if (s === "error") return ["has-status-dot", "has-status-dot--error"];
+  if (s === "info") return ["has-status-dot", "has-status-dot--info"];
+  return [];
+});
+
 function loadDraftFromExample() {
   const ex = activeExample.value;
   for (const key of Object.keys(draft)) {
     delete draft[key];
   }
   Object.assign(draft, JSON.parse(JSON.stringify(ex.options)) as Record<string, unknown>);
+  if (!("status" in draft)) draft.status = "";
 }
 
 const codeSnippet = computed(() => {
@@ -170,7 +180,7 @@ onUnmounted(() => {
             </div>
             <div class="browser-tabs" role="tablist" aria-label="Tab preview">
               <div class="browser-tab active" role="tab" aria-selected="true">
-                <span class="tab-favicon" />
+                <span class="tab-favicon" :class="tabStatusPreviewClass" />
                 <span class="tab-title">{{ browserTabTitle }}</span>
                 <span class="tab-close">×</span>
               </div>
@@ -348,6 +358,16 @@ onUnmounted(() => {
           </label>
         </template>
 
+        <label class="field">
+          <span class="field-label">Status (favicon)</span>
+          <select v-model="draft.status" class="field-input">
+            <option value="">off</option>
+            <option value="warning">warning</option>
+            <option value="error">error</option>
+            <option value="info">info</option>
+          </select>
+        </label>
+
         <label class="field field-toggle">
           <span class="field-label">Animate</span>
           <label class="toggle-row">
@@ -355,7 +375,6 @@ onUnmounted(() => {
             <span class="toggle-switch" aria-hidden="true">
               <span class="toggle-thumb" />
             </span>
-            <span>animate: true</span>
           </label>
         </label>
 
@@ -477,11 +496,36 @@ onUnmounted(() => {
 }
 
 .tab-favicon {
+  position: relative;
   width: 0.75rem;
   height: 0.75rem;
   border-radius: 3px;
   background: linear-gradient(135deg, #22c55e, #38bdf8);
   flex: 0 0 auto;
+}
+
+.tab-favicon.has-status-dot::after {
+  content: "";
+  position: absolute;
+  right: -0.05rem;
+  bottom: -0.05rem;
+  width: 0.32rem;
+  height: 0.32rem;
+  border-radius: 50%;
+  border: 0.5px solid #fff;
+  box-sizing: border-box;
+}
+
+.tab-favicon.has-status-dot--warning::after {
+  background: #facc15;
+}
+
+.tab-favicon.has-status-dot--error::after {
+  background: #dc2626;
+}
+
+.tab-favicon.has-status-dot--info::after {
+  background: #3b82f6;
 }
 
 .tab-title {
