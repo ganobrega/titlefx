@@ -20,7 +20,7 @@ Commit the generated file under `.changeset/*.md` with your PR.
 
 Two workflows:
 
-1. **`changesets-version.yml`** (push to `main`): runs `changesets/action` **without** publish — it only opens or updates the **Version packages** PR (`package.json` + `CHANGELOG.md`).
+1. **`changesets-version.yml`** (push to `main` that touches the **`.changeset`** folder): runs `changesets/action` **without** publish — it only opens or updates the **Version packages** PR (`package.json` + `CHANGELOG.md`) when there is at least one pending `.changeset/*.md` (other than `README.md`). Use **Actions → Run workflow** to force a run. Merges that only remove consumed changesets skip the action.
 2. **Merge that PR** into `main`.
 3. **`auto-tag-version.yml`** (push to `main` **that changes `package.json`**): reads **`version`** from `package.json`. If the tag **`v<version>`** (e.g. `0.2.0` → `v0.2.0`) **does not** exist on `origin`, it **creates and pushes** that tag. If the tag already exists, it does nothing. Ordinary pushes to `main` (docs, code without touching `package.json`) do **not** run this workflow.
 4. **`publish-on-tag.yml`** runs on **`push` of tags `v*`** → `npm run release` (build + `changeset publish`) with **npm trusted publishing (OIDC)**.

@@ -1,5 +1,8 @@
-# Opens / updates the "Version packages" PR when there are .changeset/*.md files on main.
+# Opens / updates the "Version packages" PR when there are pending .changeset/*.md files on main.
 # Does NOT publish to npm — see publish-on-tag.yml after you merge that PR and push a tag.
+#
+# Runs only when this push touches .changeset/ (path filter). Merges that only delete consumed
+# changesets still match the path, so we skip the action when no pending *.md remain.
 
 name: Changesets version
 
@@ -7,6 +10,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - ".changeset/**"
   workflow_dispatch:
 
 env:
@@ -28,14 +33,33 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Count pending changesets
+        id: pending
+        shell: bash
+        run: |
+          shopt -s nullglob
+          count=0
+          for f in .changeset/*.md; do
+            base=$(basename "$f")
+            if [[ "$base" == "README.md" ]]; then
+              continue
+            fi
+            count=$((count + 1))
+          done
+          echo "count=${count}" >> "${GITHUB_OUTPUT}"
+          echo "Pending changeset files (excl. README): ${count}"
+
       - uses: actions/setup-node@v6
+        if: github.event_name == 'workflow_dispatch' || steps.pending.outputs.count != '0'
         with:
           node-version: 24
           cache: npm
 
       - run: npm ci
+        if: github.event_name == 'workflow_dispatch' || steps.pending.outputs.count != '0'
 
       - name: Create or update Version packages PR
+        if: github.event_name == 'workflow_dispatch' || steps.pending.outputs.count != '0'
         uses: changesets/action@v1
         with:
           version: npm run version-packages
