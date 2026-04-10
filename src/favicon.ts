@@ -13,6 +13,7 @@ const TAB_STATUS_DOT: Record<TitlePresetTabStatus, string> = {
   error: "#dc2626",
   warning: "#facc15",
   info: "#3b82f6",
+  success: "#22c55e",
 };
 
 function xmlEscapeAttr(value: string): string {
@@ -31,17 +32,39 @@ function resolveIconHref(href: string): string {
   }
 }
 
+/** Bottom-right badge: solid dot, or outlined check for `success` (white stroke under green). */
+function tabStatusOverlay(tabStatus: TitlePresetTabStatus): string {
+  const cx = 25;
+  const cy = 25;
+  const r = 5.5;
+  const ring = ` stroke="#fff" stroke-width="1.2"`;
+
+  if (tabStatus === "success") {
+    const green = TAB_STATUS_DOT.success;
+    const d = "M4 8.8 7.4 12.4 14.2 3.9";
+    // Nested SVG in the corner; viewBox padding so thick strokes are not clipped.
+    return (
+      `<svg x="13" y="13" width="19" height="19" viewBox="-1.5 -1.5 20 20" overflow="visible">` +
+      `<path d="${d}" fill="none" stroke="#ffffff" stroke-width="3.9" stroke-linecap="round" stroke-linejoin="round"/>` +
+      `<path d="${d}" fill="none" stroke="${green}" stroke-width="2.45" stroke-linecap="round" stroke-linejoin="round"/>` +
+      `</svg>`
+    );
+  }
+
+  const fill = TAB_STATUS_DOT[tabStatus];
+  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}"${ring}/>`;
+}
+
 function wrapBaselineInBadgeSvg(
   inlinedImageHref: string,
   tabStatus: TitlePresetTabStatus,
 ): string {
   const escaped = xmlEscapeAttr(inlinedImageHref);
-  const fill = TAB_STATUS_DOT[tabStatus];
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">` +
     `<!-- ${STATUS_MARK} -->` +
     `<image href="${escaped}" width="32" height="32" preserveAspectRatio="xMidYMid slice"/>` +
-    `<circle cx="25" cy="25" r="5.5" fill="${fill}" stroke="#fff" stroke-width="1.2"/>` +
+    tabStatusOverlay(tabStatus) +
     `</svg>`;
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }

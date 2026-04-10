@@ -21,12 +21,13 @@ const showCountControls = computed(() => {
   return preset === "notifications" || preset === "progress";
 });
 
-/** Classes for the mock tab favicon dot (mirrors real favicon badge colors). */
+/** Classes for the mock tab favicon badge (mirrors real favicon: dot or success check). */
 const tabStatusPreviewClass = computed(() => {
   const s = draft.status;
   if (s === true || s === "warning") return ["has-status-dot", "has-status-dot--warning"];
   if (s === "error") return ["has-status-dot", "has-status-dot--error"];
   if (s === "info") return ["has-status-dot", "has-status-dot--info"];
+  if (s === "success") return ["has-status-dot", "has-status-check"];
   return [];
 });
 
@@ -365,6 +366,7 @@ onUnmounted(() => {
             <option value="warning">warning</option>
             <option value="error">error</option>
             <option value="info">info</option>
+            <option value="success">success</option>
           </select>
         </label>
 
@@ -476,7 +478,7 @@ onUnmounted(() => {
 .browser-tab {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
   min-width: 0;
   max-width: 17.9rem;
   width: 100%;
@@ -497,9 +499,9 @@ onUnmounted(() => {
 
 .tab-favicon {
   position: relative;
-  width: 0.75rem;
-  height: 0.75rem;
-  border-radius: 3px;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 4px;
   background: linear-gradient(135deg, #22c55e, #38bdf8);
   flex: 0 0 auto;
 }
@@ -507,10 +509,10 @@ onUnmounted(() => {
 .tab-favicon.has-status-dot::after {
   content: "";
   position: absolute;
-  right: -0.05rem;
-  bottom: -0.05rem;
-  width: 0.32rem;
-  height: 0.32rem;
+  right: -0.06rem;
+  bottom: -0.06rem;
+  width: 0.45rem;
+  height: 0.45rem;
   border-radius: 50%;
   border: 0.5px solid #fff;
   box-sizing: border-box;
@@ -526,6 +528,16 @@ onUnmounted(() => {
 
 .tab-favicon.has-status-dot--info::after {
   background: #3b82f6;
+}
+
+/** Outlined check: white stroke under green (matches `tabStatusOverlay` for success). */
+.tab-favicon.has-status-dot.has-status-check::after {
+  width: 0.72rem;
+  height: 0.72rem;
+  border-radius: 0;
+  border: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-1.5 -1.5 20 20'%3E%3Cpath d='M4 8.8 7.4 12.4 14.2 3.9' fill='none' stroke='%23fff' stroke-width='3.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M4 8.8 7.4 12.4 14.2 3.9' fill='none' stroke='%2322c55e' stroke-width='2.45' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / contain no-repeat;
 }
 
 .tab-title {

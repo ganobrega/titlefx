@@ -183,6 +183,8 @@ pushGithubStyleTitle({
   context: "Update version in package.json to 0.1.0",
   status: "warning",
 });
+
+// Use status: "success" for a green check with white outline on the favicon (e.g. CI passing).
 ```
 
 - Prefer **typed helpers** (or shared option objects) over scattering raw `preset(...)` calls across components.

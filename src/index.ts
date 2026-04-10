@@ -80,6 +80,7 @@ function normalizePresetTabStatus(
   if (raw === true || raw === "warning") return "warning";
   if (raw === "error") return "error";
   if (raw === "info") return "info";
+  if (raw === "success") return "success";
   return null;
 }
 
