@@ -1,5 +1,11 @@
 # titlefx
 
+## 0.2.3
+
+### Patch Changes
+
+- 95ed5f2: Chore: exercise draft-release and publish-on-release CI (safe to edit changelog wording before merge).
+
 ## 0.2.2
 
 ### Patch Changes
