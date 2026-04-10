@@ -1,7 +1,16 @@
 {
   "name": "titlefx",
   "version": "0.1.0",
+  "description": "Lightweight library to format and apply document.title with presets and tab animations.",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ganobrega/titlefx.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ganobrega/titlefx/issues"
+  },
+  "homepage": "https://github.com/ganobrega/titlefx#readme",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -22,9 +31,13 @@
     "dev": "bun build src/index.ts --watch --outdir dist",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "bun run build && changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.30.0",
     "typescript": "^6.0.2",
     "vitepress": "^1.6.4",
     "vue": "^3.5.13"
