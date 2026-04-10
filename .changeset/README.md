@@ -36,6 +36,23 @@ Requirements:
 
 If you install **private** npm packages in CI, use a **read-only** token only for `npm ci` / `bun install` — publishing still uses OIDC.
 
+### GitHub: “not permitted to create or approve pull requests”
+
+The release workflow uses `changesets/action`, which opens a **Version packages** PR using `GITHUB_TOKEN`. If the job fails with:
+
+`GitHub Actions is not permitted to create or approve pull requests`
+
+then in the repo **Settings → Actions → General → Workflow permissions**:
+
+- Choose **Read and write permissions**
+- Enable **Allow GitHub Actions to create and approve pull requests**
+
+Org-owned repos may inherit stricter defaults; an org admin may need to change org-level Actions policy. As a fallback, use a PAT with `repo` (or equivalent) stored as a secret and set `GITHUB_TOKEN: ${{ secrets.YOUR_PAT_SECRET }}` on the Changesets step.
+
+### npm: E404 on `PUT …/titlefx` in CI (trusted publishing)
+
+If the log shows OIDC is in use but publish still returns **404**, the setup on npm/GitHub may be correct and the **npm CLI** on the runner may be too old — npm has reported misleading404/ENEEDAUTH for OIDC until a recent release (see [npm/cli#9088](https://github.com/npm/cli/issues/9088)). This workflow runs **`npm install -g npm@11.6.2`** (or newer) after `setup-node` so `changeset publish` uses a compatible npm.
+
 ## Local versioning (optional)
 
 ```bash
