@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+# Use Node 24 for JS-based actions (checkout/setup-node deprecation of Node 20).
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
@@ -18,17 +22,17 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - uses: oven-sh/setup-bun@v2
-
-      # Trusted publishing (OIDC): npm 11.5.1+; Node 22.14+ or current LTS (see npm docs).
-      - uses: actions/setup-node@v4
+      # Node first so npm/npx are available; trusted publishing (OIDC) uses npm during `changeset publish`.
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
+
+      - uses: oven-sh/setup-bun@v2
 
       - run: bun install --frozen-lockfile
 
@@ -36,8 +40,9 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          version: bun run version-packages
-          publish: bun run release
+          # Use npm scripts so publish runs Node's npm (OIDC), not Bun.
+          version: npm run version-packages
+          publish: npm run release
           commit: "chore: version packages"
           title: "chore: version packages"
         env:

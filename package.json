@@ -27,14 +27,14 @@
   ],
   "scripts": {
     "clean": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
-    "build": "bun run clean && tsc -p tsconfig.build.json",
+    "build": "npm run clean && tsc -p tsconfig.build.json",
     "dev": "bun build src/index.ts --watch --outdir dist",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "bun run build && changeset publish"
+    "release": "npm run build && changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.30.0",
