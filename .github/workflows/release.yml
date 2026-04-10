@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 # Use Node 24 for JS-based actions (checkout/setup-node deprecation of Node 20).
 env:
