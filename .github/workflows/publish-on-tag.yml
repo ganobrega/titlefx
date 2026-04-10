@@ -27,13 +27,12 @@ jobs:
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
+          cache: npm
 
       - name: Upgrade npm for OIDC trusted publishing
         run: npm install -g npm@11.6.2 && npm -v
 
-      - uses: oven-sh/setup-bun@v2
-
-      - run: bun install --frozen-lockfile
+      - run: npm ci
 
       - name: Build and publish
         run: npm run release

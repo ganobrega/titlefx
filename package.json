@@ -28,7 +28,7 @@
   "scripts": {
     "clean": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
     "build": "npm run clean && tsc -p tsconfig.build.json",
-    "dev": "bun build src/index.ts --watch --outdir dist",
+    "dev": "tsc -p tsconfig.build.json --watch",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",

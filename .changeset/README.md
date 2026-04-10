@@ -7,9 +7,9 @@ Use [Changesets](https://github.com/changesets/changesets) to record what should
 After your change is ready (in a branch / PR):
 
 ```bash
-bunx changeset
+npx changeset
 # or
-bun run changeset
+npm run changeset
 ```
 
 Pick semver bump (patch / minor / major) and write a short summary for the changelog.
@@ -55,7 +55,7 @@ See [npm/cli#9088](https://github.com/npm/cli/issues/9088): upgrade npm in the p
 ## Local versioning (optional)
 
 ```bash
-bun run version-packages
+npm run version-packages
 ```
 
 Usually you rely on the Version packages PR from CI instead.

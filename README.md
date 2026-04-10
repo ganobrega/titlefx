@@ -39,14 +39,14 @@ bun add titlefx
 Site built with **VitePress** (guide, API, interactive playground):
 
 ```bash
-bun install
-bun run docs:dev
+npm install
+npm run docs:dev
 ```
 
 Build for static hosting (e.g. GitHub Pages):
 
 ```bash
-bun run docs:build
+npm run docs:build
 ```
 
 Output: `docs/.vitepress/dist`. In `docs/.vitepress/config.ts`, `base` defaults to `/` (domínio na raiz). Para GitHub Pages em `https://<user>.github.io/<repo>/`, define `base: '/<repo>/'`.

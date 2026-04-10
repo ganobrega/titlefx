@@ -21,17 +21,17 @@ Hi! We're really excited that you are interested in contributing to titlefx. Bef
 
 - Prefer clear commit messages (e.g. [Conventional Commits](https://www.conventionalcommits.org/)) so history and release notes stay easy to follow.
 
-- Include a **Changeset** for user-facing changes: run `bun run changeset` (or `bunx changeset`), pick patch/minor/major, and commit the generated `.changeset/*.md` with your PR. See `.changeset/README.md`.
+- Include a **Changeset** for user-facing changes: run `npm run changeset` (or `npx changeset`), pick patch/minor/major, and commit the generated `.changeset/*.md` with your PR. See `.changeset/README.md`.
 
 ## Development Setup
 
-You will need [Bun](https://bun.sh) (used in this repo’s scripts) or another runtime that can run the same commands via npm/pnpm if you adapt them locally.
+You will need a current **Node.js** (see `.github/workflows` for the version used in CI).
 
 After cloning the repo, run:
 
 ```sh
 # install dependencies
-$ bun install
+$ npm install
 ```
 
 ### Documentation site (VitePress)
@@ -39,7 +39,7 @@ $ bun install
 To work on the docs and playground with live reload:
 
 ```sh
-$ bun run docs:dev
+$ npm run docs:dev
 ```
 
 Then open the URL shown in the terminal (often `http://localhost:5173`) and edit files under `docs/`.
@@ -47,13 +47,13 @@ Then open the URL shown in the terminal (often `http://localhost:5173`) and edit
 To build static output:
 
 ```sh
-$ bun run docs:build
+$ npm run docs:build
 ```
 
 Preview the production build:
 
 ```sh
-$ bun run docs:preview
+$ npm run docs:preview
 ```
 
 ### Library package
@@ -61,11 +61,11 @@ $ bun run docs:preview
 Typecheck and emit `dist/`:
 
 ```sh
-$ bun run build
+$ npm run build
 ```
 
 Watch mode while changing `src/`:
 
 ```sh
-$ bun run dev
+$ npm run dev
 ```

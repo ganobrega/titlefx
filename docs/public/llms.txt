@@ -4,7 +4,7 @@ titlefx is a small TypeScript library (npm package `titlefx`) that formats strin
 
 Repository: https://github.com/ganobrega/titlefx
 
-This file is served at `/llms.txt` on the VitePress docs site (source: `docs/public/llms.txt`). Develop docs with `bun run docs:dev`.
+This file is served at `/llms.txt` on the VitePress docs site (source: `docs/public/llms.txt`). Develop docs with `npm run docs:dev`.
 
 Package version in source: see `package.json` (e.g. 0.1.0). Build output: `dist/` (ESM + `.d.ts`). Entry: `src/index.ts` → `dist/index.js`.
 
