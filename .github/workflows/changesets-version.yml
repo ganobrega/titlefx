@@ -1,5 +1,5 @@
 # Opens / updates the "Version packages" PR when there are pending .changeset/*.md files on main.
-# Does NOT publish to npm — see publish-on-tag.yml after you merge that PR and push a tag.
+# Does NOT publish to npm — see auto-tag-version.yml (draft release) and publish-on-release.yml.
 #
 # Runs only when this push touches .changeset/ (path filter). Merges that only delete consumed
 # changesets still match the path, so we skip the action when no pending *.md remain.

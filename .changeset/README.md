@@ -18,20 +18,17 @@ Commit the generated file under `.changeset/*.md` with your PR.
 
 ## Release flow (CI)
 
-Two workflows:
-
 1. **`changesets-version.yml`** (push to `main` that touches the **`.changeset`** folder): runs `changesets/action` **without** publish — it only opens or updates the **Version packages** PR (`package.json` + `CHANGELOG.md`) when there is at least one pending `.changeset/*.md` (other than `README.md`). Use **Actions → Run workflow** to force a run. Merges that only remove consumed changesets skip the action.
 2. **Merge that PR** into `main`.
-3. **`auto-tag-version.yml`** (push to `main` **that changes `package.json`**): reads **`version`** from `package.json`. If the tag **`v<version>`** (e.g. `0.2.0` → `v0.2.0`) **does not** exist on `origin`, it **creates and pushes** that tag. If the tag already exists, it does nothing. Ordinary pushes to `main` (docs, code without touching `package.json`) do **not** run this workflow.
-4. **`publish-on-tag.yml`** runs on **`push` of tags `v*`** → `npm run release` (build + `changeset publish`) with **npm trusted publishing (OIDC)**.
-
-To tag **manually** instead (or to fix a missed release), you can still run `git tag vX.Y.Z && git push origin vX.Y.Z` as long as the tag does not already exist.
+3. **`auto-tag-version.yml`** (push to `main` that changes **`package.json`**): creates a **draft GitHub Release** named `v<version>` pointing at the merge commit (the git tag is created when you publish the release).
+4. On GitHub: open **Releases**, review the draft, then click **Publish release**.
+5. **`publish-on-release.yml`** runs on **`release: published`** (only **non-prerelease** releases) → `npm run release` with **npm trusted publishing (OIDC)**. Prereleases on GitHub do not publish to npm with this workflow.
 
 ### npm trusted publishing (OIDC, no `NPM_TOKEN`)
 
-On [npmjs.com](https://www.npmjs.com/) → package **Settings → Trusted publishing**, set the workflow filename to the one that runs **`npm publish`**:
+On [npmjs.com](https://www.npmjs.com/) → package **Settings → Trusted publishing**, set the workflow that runs **`npm publish`**:
 
-- **`publish-on-tag.yml`** (filename only, as npm shows the field)
+- **`publish-on-release.yml`**
 
 Also required:
 
@@ -50,7 +47,7 @@ Applies to **`changesets-version.yml`** only (it opens the Version PR). In **Set
 
 ### npm: E404 on publish in CI
 
-See [npm/cli#9088](https://github.com/npm/cli/issues/9088): upgrade npm in the publish workflow (already pinned to **11.6.2** in `publish-on-tag.yml`).
+See [npm/cli#9088](https://github.com/npm/cli/issues/9088): upgrade npm in the publish workflow (already pinned to **11.6.2** in `publish-on-release.yml`).
 
 ## Local versioning (optional)
 

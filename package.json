@@ -34,7 +34,7 @@
     "docs:preview": "vitepress preview docs",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "npm run build && changeset publish"
+    "release": "npm run build && changeset publish --no-git-tag"
   },
   "devDependencies": {
     "@changesets/cli": "^2.30.0",

@@ -1,8 +1,7 @@
-# After a Version packages merge, package.json on main has the new version.
-# This workflow creates and pushes v<version> if that tag does not exist yet,
-# which triggers publish-on-tag.yml.
+# When package.json version changes on main, opens a draft GitHub Release for v<version>.
+# Publishing that release (GitHub UI) creates the tag and triggers publish-on-release.yml → npm.
 
-name: Auto-tag version
+name: Draft release on version bump
 
 on:
   push:
@@ -15,30 +14,33 @@ permissions:
   contents: write
 
 concurrency:
-  group: auto-tag-main
+  group: draft-release-main
   cancel-in-progress: false
 
 jobs:
-  tag:
+  draft:
+    name: Create draft GitHub Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
-      - name: Create and push release tag if missing
+      - name: Create draft release if missing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
-          set -e
+          set -euo pipefail
           VERSION=$(jq -r '.version' package.json)
           TAG="v${VERSION}"
-          git fetch origin --tags --quiet 2>/dev/null || true
-          if git ls-remote --tags origin "refs/tags/${TAG}" | grep -q .; then
-            echo "Tag ${TAG} already exists on origin, nothing to do."
+          if gh release view "${TAG}" --repo "${GITHUB_REPOSITORY}" &>/dev/null; then
+            echo "Release ${TAG} already exists; skipping."
             exit 0
           fi
-          echo "Pushing new tag ${TAG} (package.json version ${VERSION})"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag "${TAG}" HEAD
-          git push origin "${TAG}"
+          echo "Creating draft release ${TAG} at ${GITHUB_SHA}"
+          gh release create "${TAG}" \
+            --draft \
+            --title "${TAG}" \
+            --generate-notes \
+            --target "${GITHUB_SHA}" \
+            --repo "${GITHUB_REPOSITORY}"

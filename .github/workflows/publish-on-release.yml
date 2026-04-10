@@ -1,12 +1,13 @@
-# Publishes to npm when you push a version tag (e.g. v0.2.0) after merging the Version packages PR.
-# Configure npm Trusted publishing with this workflow filename: publish-on-tag.yml
+# Publishes to npm when a GitHub Release is published (not draft, not prerelease).
+# Draft releases are created by auto-tag-version.yml; after you
+# click "Publish release" on GitHub, this workflow runs.
+# Configure npm Trusted publishing with this workflow filename: publish-on-release.yml
 
-name: Publish on tag
+name: Publish on release
 
 on:
-  push:
-    tags:
-      - "v*"
+  release:
+    types: [published]
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -14,6 +15,7 @@ env:
 jobs:
   publish:
     name: Publish to npm
+    if: ${{ !github.event.release.prerelease }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -22,6 +24,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          fetch-depth: 0
 
       - uses: actions/setup-node@v6
         with:
