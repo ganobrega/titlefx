@@ -106,6 +106,8 @@ titlefx.preset("media", {
 });
 ```
 
+When the tab is visible, animations use `requestAnimationFrame`. When the page loses focus, `titlefx` switches to timers and catches up delayed ticks so marquee-like motion does not obviously slow down in the background.
+
 ## Cleanup
 
 To restore the original page title and stop the current animation:
@@ -119,4 +121,4 @@ titlefx.dispose();
 - In the browser, `window.titlefx` points to the same API
 - Without DOM access, the package does not touch `window` or `document`
 
-For full formatting and type details, see the [API](/api/).
+For full formatting and type details, see the [Reference](/api/).

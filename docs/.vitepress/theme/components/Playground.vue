@@ -2,100 +2,12 @@
 import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
 import titlefx from "titlefx";
 import { clampCount } from "../../../../src/clamp";
-import type { TitlePresetName, TitlePresetOptionsMap } from "../../../../src/preset";
-
-type Example<TName extends TitlePresetName = TitlePresetName> = {
-  id: string;
-  label: string;
-  preset: TName;
-  options: TitlePresetOptionsMap[TName];
-};
-
-const examples: Example[] = [
-  {
-    id: "spotify",
-    label: "Spotify",
-    preset: "media",
-    options: {
-      content: "Blinding Lights",
-      author: "The Weeknd",
-      brand: "Spotify",
-      animate: true,
-      animation: "loop",
-      speed: "normal",
-    },
-  },
-  {
-    id: "whatsapp",
-    label: "WhatsApp",
-    preset: "notifications",
-    options: {
-      count: 7,
-      brand: "WhatsApp",
-      context: "Lucas",
-      prefix: "💬",
-    },
-  },
-  {
-    id: "gmail",
-    label: "Gmail",
-    preset: "custom",
-    options: {
-      template: "Inbox ({count}) - {email} - {brand}",
-      count: "8.456",
-      email: "me@example.com",
-      brand: "Gmail",
-    },
-  },
-  {
-    id: "instagram",
-    label: "Instagram",
-    preset: "notifications",
-    options: {
-      count: 4,
-      brand: "Instagram",
-      context: "New notifications",
-      prefix: "📸",
-    },
-  },
-  {
-    id: "tinder",
-    label: "Tinder",
-    preset: "notifications",
-    options: {
-      prefix: "🔥",
-      count: 3,
-      brand: "Tinder",
-      context: "New match",
-      suffix: "❤️😍🥰",
-      animate: true,
-      animation: "blink",
-      speed: "fast",
-    },
-  },
-  {
-    id: "site-default",
-    label: "Website (default)",
-    preset: "default",
-    options: {
-      context: "Homepage",
-      brand: "My site",
-    },
-  },
-  {
-    id: "installer-progress",
-    label: "uTorrent",
-    preset: "progress",
-    options: {
-      count: 42,
-      brand: "uTorrent",
-      context: "Downloading",
-    },
-  },
-];
+import type { TitlePresetName } from "../../../../src/preset";
+import { examples } from "./playground-examples";
 
 const activeId = ref(examples[0]?.id ?? "");
 const appliedTitle = ref("");
+const copyLabel = ref("Copy");
 
 const draft = reactive<Record<string, unknown>>({});
 let titleFrameId: number | null = null;
@@ -198,6 +110,17 @@ function resetTitle() {
   syncAppliedTitle();
 }
 
+async function copySnippet() {
+  if (typeof navigator === "undefined" || !navigator.clipboard) return;
+
+  await navigator.clipboard.writeText(codeSnippet.value);
+  copyLabel.value = "Copied";
+
+  window.setTimeout(() => {
+    copyLabel.value = "Copy";
+  }, 1200);
+}
+
 function startTitleMirrorLoop() {
   if (typeof window === "undefined") return;
 
@@ -225,49 +148,49 @@ onUnmounted(() => {
 
 <template>
   <div class="playground">
-    <section class="preview-band">
-      <div class="browser-mockup">
-        <div class="browser-topbar">
-          <div class="window-actions" aria-hidden="true">
-            <span class="window-dot close" />
-            <span class="window-dot minimize" />
-            <span class="window-dot maximize" />
-          </div>
-          <div class="browser-tabs" role="tablist" aria-label="Tab preview">
-            <div class="browser-tab active" role="tab" aria-selected="true">
-              <span class="tab-favicon" />
-              <span class="tab-title">{{ browserTabTitle }}</span>
-              <span class="tab-close">×</span>
+    <section class="playground-top">
+      <section class="snippet-band">
+        <div class="snippet-header">
+          <div class="section-title"></div>
+        </div>
+
+        <div class="snippet-shell">
+          <button type="button" class="copy-btn" @click="copySnippet">{{ copyLabel }}</button>
+          <pre class="code-block"><code>{{ codeSnippet }}</code></pre>
+        </div>
+      </section>
+
+      <section class="preview-band">
+        <div class="browser-mockup">
+          <div class="browser-topbar">
+            <div class="window-actions" aria-hidden="true">
+              <span class="window-dot close" />
+              <span class="window-dot minimize" />
+              <span class="window-dot maximize" />
+            </div>
+            <div class="browser-tabs" role="tablist" aria-label="Tab preview">
+              <div class="browser-tab active" role="tab" aria-selected="true">
+                <span class="tab-favicon" />
+                <span class="tab-title">{{ browserTabTitle }}</span>
+                <span class="tab-close">×</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="browser-toolbar">
-          <div class="toolbar-nav">
-            <span class="nav-btn">‹</span>
-            <span class="nav-btn">›</span>
-            <span class="nav-btn">↻</span>
+          <div class="browser-toolbar">
+            <div class="toolbar-nav">
+              <span class="nav-btn">‹</span>
+              <span class="nav-btn">›</span>
+              <span class="nav-btn">↻</span>
+            </div>
+            <div class="address-bar">https://app.example.com</div>
           </div>
-          <div class="address-bar">https://app.example.com</div>
-        </div>
 
-        <div class="browser-canvas">
-          <div class="canvas-title">{{ activeExample.label }}</div>
+          <div class="browser-canvas">
+            <div class="canvas-title">{{ activeExample.label }}</div>
+          </div>
         </div>
-      </div>
-    </section>
-
-    <section class="examples-grid">
-      <button
-        v-for="example in examples"
-        :key="example.id"
-        type="button"
-        class="example-tile"
-        :class="{ active: example.id === activeId }"
-        @click="applyExample(example.id)"
-      >
-        <span class="tile-label">{{ example.label }}</span>
-      </button>
+      </section>
     </section>
 
     <section class="tweak-panel">
@@ -279,6 +202,20 @@ onUnmounted(() => {
             Reset example
           </button>
         </div>
+      </div>
+
+      <div class="examples-grid" role="tablist" aria-label="Examples">
+        <button
+          v-for="example in examples"
+          :key="example.id"
+          type="button"
+          class="example-tile"
+          :class="{ active: example.id === activeId }"
+          :aria-selected="example.id === activeId"
+          @click="applyExample(example.id)"
+        >
+          <span class="tile-label">{{ example.label }}</span>
+        </button>
       </div>
 
       <div class="field-grid">
@@ -415,6 +352,9 @@ onUnmounted(() => {
           <span class="field-label">Animate</span>
           <label class="toggle-row">
             <input v-model="draft.animate" type="checkbox" class="toggle-input" />
+            <span class="toggle-switch" aria-hidden="true">
+              <span class="toggle-thumb" />
+            </span>
             <span>animate: true</span>
           </label>
         </label>
@@ -422,7 +362,7 @@ onUnmounted(() => {
         <label class="field">
           <span class="field-label">Animation</span>
           <select v-model="draft.animation" class="field-input">
-            <option value="">No animation</option>
+            <option value=""></option>
             <option value="loop">loop</option>
             <option value="bounce">bounce</option>
             <option value="blink">blink</option>
@@ -432,7 +372,7 @@ onUnmounted(() => {
         <label class="field">
           <span class="field-label">Speed</span>
           <select v-model="draft.speed" class="field-input">
-            <option value="">normal</option>
+            <option value=""></option>
             <option value="slow">slow</option>
             <option value="normal">normal</option>
             <option value="fast">fast</option>
@@ -440,21 +380,19 @@ onUnmounted(() => {
         </label>
       </div>
     </section>
-
-    <section class="snippet-band">
-      <div class="snippet-header">
-        <h3 class="section-title">{{ activeExample.label }}</h3>
-        <button type="button" class="ghost-btn" @click="resetTitle">dispose()</button>
-      </div>
-
-      <pre class="code-block"><code>{{ codeSnippet }}</code></pre>
-    </section>
   </div>
 </template>
 
 <style scoped>
 .playground {
   margin-top: 1rem;
+}
+
+.playground-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
 }
 
 .preview-band,
@@ -465,6 +403,11 @@ onUnmounted(() => {
   border: 1px solid var(--vp-c-divider);
   border-radius: 8px;
   background: var(--vp-c-bg-soft);
+}
+
+.playground-top .preview-band,
+.playground-top .snippet-band {
+  margin-top: 0;
 }
 
 .browser-mockup {
@@ -610,22 +553,20 @@ onUnmounted(() => {
 
 .examples-grid {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 1rem;
 }
 
 .example-tile {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.55rem;
-  min-height: 3.25rem;
-  padding: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.55rem 0.9rem;
   border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
-  background: var(--vp-c-bg-soft);
+  border-radius: 999px;
+  background: var(--vp-c-bg);
   color: var(--vp-c-text-1);
   text-align: left;
   cursor: pointer;
@@ -642,13 +583,13 @@ onUnmounted(() => {
 
 .example-tile.active {
   border-color: var(--vp-c-brand-1);
-  background: var(--vp-c-bg-alt);
+  background: color-mix(in srgb, var(--vp-c-brand-1) 12%, var(--vp-c-bg));
 }
 
 .tile-label {
-  font-size: 0.9rem;
-  font-weight: 650;
-  color: var(--vp-c-text-1);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: inherit;
 }
 
 .tweak-header {
@@ -728,8 +669,38 @@ onUnmounted(() => {
 }
 
 .toggle-input {
-  width: 1rem;
-  height: 1rem;
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 2.5rem;
+  height: 1.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--vp-c-text-3) 35%, transparent);
+  transition: background-color 0.18s ease;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
+  transition: transform 0.18s ease;
+}
+
+.toggle-input:checked + .toggle-switch {
+  background: var(--vp-c-brand-1);
+}
+
+.toggle-input:checked + .toggle-switch .toggle-thumb {
+  transform: translateX(1.05rem);
 }
 
 .count-input {
@@ -777,6 +748,10 @@ onUnmounted(() => {
   gap: 0.75rem;
 }
 
+.snippet-shell {
+  position: relative;
+}
+
 .section-title {
   margin: 0;
   font-size: 0.95rem;
@@ -796,18 +771,42 @@ onUnmounted(() => {
   border-color: var(--vp-c-brand-2);
 }
 
+.copy-btn {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  z-index: 1;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #e5eefc;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+.copy-btn:hover {
+  background: rgba(15, 23, 42, 0.94);
+}
+
 .code-block {
   margin: 0.9rem 0 0;
-  padding: 0.95rem;
+  height: 18rem;
+  padding: 3rem 0.95rem 0.95rem;
   border-radius: 8px;
   background: #0f172a;
   color: #e5eefc;
-  overflow-x: auto;
+  overflow: auto;
   font-size: 0.86rem;
   line-height: 1.55;
 }
 
 @media (max-width: 640px) {
+  .playground-top {
+    grid-template-columns: 1fr;
+  }
+
   .snippet-header,
   .tweak-header {
     align-items: stretch;

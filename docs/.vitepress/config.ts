@@ -27,8 +27,24 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: "Guide", link: "/guide/", activeMatch: "/guide/" },
-      { text: "API", link: "/api/", activeMatch: "/api/" },
-      { text: "Playground", link: "/playground" },
+      { text: "Reference", link: "/api/", activeMatch: "/api/" },
+      {
+        text: "0.1.0",
+        items: [
+          {
+            text: "Changelog",
+            link: "https://github.com/ganobrega/titlefx/releases",
+            target: "_blank",
+            rel: "noreferrer",
+          },
+          {
+            text: "Contributing",
+            link: "https://github.com/ganobrega/titlefx/blob/main/.github/contributing.md",
+            target: "_blank",
+            rel: "noreferrer",
+          },
+        ],
+      },
     ],
 
     sidebar: {
@@ -40,7 +56,7 @@ export default defineConfig({
       ],
       "/api/": [
         {
-          text: "API",
+          text: "Reference",
           items: [{ text: "Overview", link: "/api/" }],
         },
       ],

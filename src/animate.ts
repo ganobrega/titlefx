@@ -5,6 +5,14 @@ export type TitlefxAnimationState = {
   frames: string[];
 };
 
+type AnimationTimerMode = "raf" | "timeout";
+type AnimationRuntime = {
+  timerMode: AnimationTimerMode | null;
+  visibilityHandler: (() => void) | null;
+  intervalTimer: number | null;
+  timeoutTimer: number | null;
+};
+
 export type TitlefxAnimationSpeed = "slow" | "normal" | "fast";
 export type TitlefxAnimationType = "loop" | "bounce" | "blink";
 
@@ -23,6 +31,21 @@ const BLINK_SPEED_INTERVALS: Record<TitlefxAnimationSpeed, number> = {
 
 const MIN_DELAY_FACTOR = 0.68;
 const MAX_DELAY_FACTOR = 1.45;
+const animationRuntime = new WeakMap<TitlefxAnimationState, AnimationRuntime>();
+
+function getRuntime(state: TitlefxAnimationState): AnimationRuntime {
+  let runtime = animationRuntime.get(state);
+  if (!runtime) {
+    runtime = {
+      timerMode: null,
+      visibilityHandler: null,
+      intervalTimer: null,
+      timeoutTimer: null,
+    };
+    animationRuntime.set(state, runtime);
+  }
+  return runtime;
+}
 
 export function createAnimationState(): TitlefxAnimationState {
   return {
@@ -140,9 +163,28 @@ function getNextDelay(
 }
 
 export function stopAnimation(state: TitlefxAnimationState | null): void {
-  if (!state || state.timer === null) return;
-  window.cancelAnimationFrame(state.timer);
+  if (!state) return;
+
+  const runtime = getRuntime(state);
+  if (runtime.timerMode === "timeout" && runtime.timeoutTimer !== null) {
+    window.clearTimeout(runtime.timeoutTimer);
+  } else if (runtime.timerMode === "raf" && state.timer !== null) {
+    window.cancelAnimationFrame(state.timer);
+  }
+
+  if (runtime.intervalTimer !== null) {
+    window.clearInterval(runtime.intervalTimer);
+  }
+
   state.timer = null;
+  runtime.timerMode = null;
+  runtime.intervalTimer = null;
+  runtime.timeoutTimer = null;
+
+  if (runtime.visibilityHandler) {
+    document.removeEventListener("visibilitychange", runtime.visibilityHandler);
+    runtime.visibilityHandler = null;
+  }
 }
 
 export function startTitleAnimation(
@@ -170,25 +212,109 @@ export function startTitleAnimation(
     return;
   }
 
-  let nextDelay = getNextDelay(type, speed, state.index, frames.length);
-  let nextTickAt = performance.now() + nextDelay;
+  const runtime = getRuntime(state);
+  let nextTickAt = performance.now() + getNextDelay(type, speed, state.index, frames.length);
 
-  const tick = (now: number) => {
-    if (now >= nextTickAt) {
+  const advanceFrame = (now: number) => {
+    if (now < nextTickAt) return false;
+
+    state.index = state.index >= state.frames.length - 1 ? 0 : state.index + 1;
+    onFrame(state.frames[state.index] ?? text);
+    nextTickAt += getNextDelay(type, speed, state.index, state.frames.length);
+    return true;
+  };
+
+  const catchUpFrames = (now: number) => {
+    if (type === "blink" && getRuntime(state).timerMode === "timeout") {
+      if (now < nextTickAt) return false;
+
       state.index = state.index >= state.frames.length - 1 ? 0 : state.index + 1;
       onFrame(state.frames[state.index] ?? text);
-
-      nextDelay = getNextDelay(
-        type,
-        speed,
-        state.index,
-        state.frames.length,
-      );
-      nextTickAt = now + nextDelay;
+      nextTickAt = now + getNextDelay(type, speed, state.index, state.frames.length);
+      return true;
     }
+
+    let advanced = false;
+    let guard = 0;
+
+    while (now >= nextTickAt && guard < Math.max(4, state.frames.length * 2)) {
+      advanced = advanceFrame(now) || advanced;
+      guard += 1;
+    }
+
+    if (now > nextTickAt) {
+      nextTickAt = now + getNextDelay(type, speed, state.index, state.frames.length);
+    }
+
+    return advanced;
+  };
+
+  const clearScheduledTick = () => {
+    if (runtime.timerMode === "timeout" && runtime.timeoutTimer !== null) {
+      window.clearTimeout(runtime.timeoutTimer);
+    } else if (runtime.timerMode === "raf" && state.timer !== null) {
+      window.cancelAnimationFrame(state.timer);
+    }
+    if (runtime.intervalTimer !== null) {
+      window.clearInterval(runtime.intervalTimer);
+    }
+    state.timer = null;
+    runtime.timerMode = null;
+    runtime.intervalTimer = null;
+    runtime.timeoutTimer = null;
+  };
+
+  const scheduleVisibleTick = () => {
+    clearScheduledTick();
+    runtime.timerMode = "raf";
+
+    const tick = (now: number) => {
+      catchUpFrames(now);
+      if (runtime.timerMode !== "raf") return;
+      state.timer = window.requestAnimationFrame(tick);
+    };
 
     state.timer = window.requestAnimationFrame(tick);
   };
 
-  state.timer = window.requestAnimationFrame(tick);
+  const scheduleHiddenTick = () => {
+    clearScheduledTick();
+    runtime.timerMode = "timeout";
+
+    const poll = () => {
+      const now = performance.now();
+      catchUpFrames(now);
+      if (runtime.timerMode !== "timeout") return;
+    };
+
+    const startInterval = () => {
+      poll();
+      if (runtime.timerMode !== "timeout") return;
+
+      const intervalMs = Math.max(
+        16,
+        Math.min(
+          SPEED_INTERVALS[speed],
+          getNextDelay(type, speed, state.index, state.frames.length),
+        ),
+      );
+      runtime.intervalTimer = window.setInterval(poll, intervalMs);
+    };
+
+    const delay = Math.max(16, Math.round(nextTickAt - performance.now()));
+    runtime.timeoutTimer = window.setTimeout(startInterval, delay);
+    state.timer = runtime.timeoutTimer;
+  };
+
+  const syncScheduler = () => {
+    if (document.hidden) {
+      scheduleHiddenTick();
+    } else {
+      scheduleVisibleTick();
+    }
+  };
+
+  runtime.visibilityHandler = syncScheduler;
+  document.addEventListener("visibilitychange", syncScheduler);
+  syncScheduler();
 }

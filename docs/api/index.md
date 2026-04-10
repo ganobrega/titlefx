@@ -1,4 +1,8 @@
-# API
+---
+title: Reference
+---
+
+# Reference
 
 `titlefx` exposes a very small API:
 
@@ -149,6 +153,12 @@ Types:
 type TitlefxAnimationType = "loop" | "bounce" | "blink";
 type TitlefxAnimationSpeed = "slow" | "normal" | "fast";
 ```
+
+Runtime behavior:
+
+- while the page is visible, animations run with `requestAnimationFrame`
+- when the page goes into the background, `titlefx` falls back to timers so the tab title keeps moving
+- delayed background ticks catch up based on elapsed time to avoid obvious slow motion
 
 Exported helpers:
 
